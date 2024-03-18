@@ -1,0 +1,22 @@
+version = 0.1
+[dev.deploy.parameters]
+stack_name = "SamCygnum"
+resolve_s3 = true
+s3_prefix = "SamCygnum"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+image_repositories = []
+parameter_overrides = "TableName=\"WeatherData\""
+
+[default.deploy.parameters]
+stack_name = "SamCygnum"
+resolve_s3 = true
+s3_prefix = "SamCygnum"
+region = "us-east-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+disable_rollback = true
+image_repositories = []
+parameter_overrides = "TableName=\"WeatherData\""

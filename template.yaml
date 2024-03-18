@@ -1,0 +1,84 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless patterns - Amazon API Gateway to AWS Lambda to Amazon DynamoDB (uksb-1tthgi812) (tag:apigw-lambda-dynamodb)
+
+Parameters:
+  TableName:
+     Type: String
+     Description: This is the table name for dynamo db
+     Default: 'WeatherData'
+Resources:
+  RestAPI:
+    Type: AWS::Serverless::Api
+    Description: Rest Api which will be having post and delete method
+    Properties:
+      StageName: Prod
+      Cors:
+        AllowMethods: "'POST, GET', 'OPTIONS', 'DELETE'"
+        AllowHeaders: "'Content-Type', 'X-Amz-Date', 'Authorization' and 'X-Api-Key'"
+        AllowOrigin: "'*'"
+      Auth:
+        DefaultAuthorizer: MyLambdaTokenAuthorizer
+        Authorizers:
+          MyLambdaTokenAuthorizer:
+            FunctionPayloadType: TOKEN
+            FunctionArn: !GetAtt AuthFunction.Arn
+            Identity:
+              Headers:
+                - Authorization
+            AuthorizerPayloadFormatVersion: 2.0
+  AuthFunction:
+    Type: AWS::Serverless::Function
+    Description: 'This is the authorizer lambda'
+    Properties:
+      FunctionName: AuthFunction
+      Handler: auth_function.lambda_handler
+      Runtime: python3.9
+      CodeUri: src/auth_function  
+  AddWeather:
+    Type: AWS::Serverless::Function
+    Description: 'Lambda function inserts data into DynamoDB table'
+    Properties:
+      FunctionName: AddWeather
+      Handler: add_weather.lambda_handler
+      Runtime: python3.9
+      CodeUri: src/add_weather
+      Environment:
+        Variables:
+          TableName: !Ref TableName
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref DynamoDBTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestAPI
+            Path: /
+            Method: POST
+  RemoveWeather:
+    Type: AWS::Serverless::Function
+    Description: 'Lambda function used to delete data from DynamoDB table'
+    Properties:
+      FunctionName: RemoveWeather
+      Handler: remove_weather.lambda_handler
+      Runtime: python3.9
+      CodeUri: src/remove_weather
+      Environment:
+        Variables:
+          TableName: !Ref TableName
+      Policies:
+        DynamoDBCrudPolicy:
+          TableName: !Ref DynamoDBTable
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestAPI
+            Path: /
+            Method: DELETE
+  DynamoDBTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: WeatherData
+
