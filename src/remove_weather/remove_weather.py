@@ -13,7 +13,7 @@ def lambda_handler(event, context):
         dynamodb_table = dynamodb_client.Table(os.environ['TableName'])
         dynamodb_table.delete_item(Key={'id': dict_body['id']})
         return {
-          'statusCode': 204,
+          'statusCode': 200,
           'body': 'Successfully deleted the record'
         }
     else:
