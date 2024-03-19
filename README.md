@@ -26,4 +26,13 @@ SamCygnum
 ## Commands for stack Deletion
 * aws cloudformation delete-stack --stack-name SamCygnum
 
+## Commands for Pytest Installation
+* python3 -m venv venv
+* source venv/bin/activate
+* pip3 install pytest-mock
+* pip3 install boto3
+
+## Commands for pytest
+* pytest
+
 

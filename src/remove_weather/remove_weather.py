@@ -7,19 +7,24 @@ dynamodb_client = boto3.resource('dynamodb')
 This function is used to remove the weather details from dynamodb
 """
 def lambda_handler(event, context):
+    response = ''
+    status_code = 400
     req_body = event['body']
-    dict_body = json.loads(req_body)
-    if 'id' in dict_body:
-        dynamodb_table = dynamodb_client.Table(os.environ['TableName'])
-        dynamodb_table.delete_item(Key={'id': dict_body['id']})
-        return {
-          'statusCode': 200,
-          'body': 'Successfully deleted the record'
-        }
+    if req_body:
+        try:
+            dict_body = json.loads(req_body)
+            if 'id' in dict_body and isinstance(dict_body['id'], str):
+                dynamodb_table = dynamodb_client.Table(os.environ['TableName'])
+                dynamodb_table.delete_item(Key={'id': dict_body['id']})
+                response = 'Successfully deleted the record'
+                status_code = 200
+            else:
+                response = 'id is missing or id is not in the format'
+        except Exception as err:
+            response = 'Input is not in valid format'
     else:
-        return {
-          'statusCode': 400,
-          'body': 'id is missing'
-        }
-
-
+        response = 'Request body is absent'
+    return {
+        'statusCode': status_code,
+        'body': response
+    }
